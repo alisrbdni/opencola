@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "BrowserAgent — Multi-LLM Autonomous Agent",
+  "version": "1.0.0",
+  "description": "Autonomous AI agent that controls your browser and communicates via Telegram & WhatsApp",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options/index.html",
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "scripting",
+    "storage",
+    "alarms",
+    "notifications",
+    "debugger",
+    "history",
+    "bookmarks",
+    "downloads",
+    "cookies",
+    "webNavigation",
+    "webRequest",
+    "contextMenus",
+    "offscreen",
+    "sidePanel"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
