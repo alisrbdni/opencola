@@ -5,6 +5,7 @@ export type AgentStatus =
   | "thinking"
   | "acting"
   | "waiting_user"
+  | "paused"
   | "error"
   | "completed";
 
@@ -224,6 +225,7 @@ export interface AgentSettings {
   autonomyLevel: "supervised" | "semi-auto" | "autonomous";
   confirmBeforeActions: boolean;
   systemPrompt: string;
+  safetyMode: boolean;
 }
 
 export interface UISettings {
@@ -237,6 +239,8 @@ export interface UISettings {
 export type ChromeMessage =
   | { type: "CREATE_TASK"; payload: { goal: string; source?: TaskSource } }
   | { type: "CANCEL_TASK"; payload: { taskId: string } }
+  | { type: "PAUSE_TASK"; payload: { taskId: string } }
+  | { type: "RESUME_TASK"; payload: { taskId: string } }
   | { type: "GET_TASKS" }
   | { type: "GET_SETTINGS" }
   | { type: "SAVE_SETTINGS"; payload: { settings: ExtensionSettings } }

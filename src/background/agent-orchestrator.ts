@@ -171,10 +171,14 @@ const BROWSER_TOOLS: LLMTool[] = [
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
+// Tools blocked when safety mode is enabled
+const SAFETY_BLOCKED_TOOLS = new Set(["fill_form", "evaluate_js"]);
+
 export class AgentOrchestrator {
   private tasks = new Map<string, AgentTask>();
   private browser = new BrowserController();
   private userInputResolvers = new Map<string, (input: string) => void>();
+  private pauseResolvers = new Map<string, () => void>();
 
   // ── Task Lifecycle ──────────────────────────────────────────────────────────
 
@@ -214,8 +218,32 @@ export class AgentOrchestrator {
 
   cancelTask(id: string): void {
     const task = this.tasks.get(id);
-    if (task && (task.status === "thinking" || task.status === "acting" || task.status === "waiting_user")) {
+    if (task && (task.status === "thinking" || task.status === "acting" || task.status === "waiting_user" || task.status === "paused")) {
       this.updateTask(task, { status: "error", error: "Cancelled by user" });
+      // Unblock any waiting resolvers
+      this.pauseResolvers.get(id)?.();
+      this.pauseResolvers.delete(id);
+      this.userInputResolvers.get(id)?.("[Cancelled]");
+      this.userInputResolvers.delete(id);
+    }
+  }
+
+  pauseTask(id: string): void {
+    const task = this.tasks.get(id);
+    if (task && (task.status === "thinking" || task.status === "acting")) {
+      this.updateTask(task, { status: "paused" });
+    }
+  }
+
+  resumeTask(id: string): void {
+    const task = this.tasks.get(id);
+    if (task && task.status === "paused") {
+      this.updateTask(task, { status: "thinking" });
+      const resolver = this.pauseResolvers.get(id);
+      if (resolver) {
+        resolver();
+        this.pauseResolvers.delete(id);
+      }
     }
   }
 
@@ -272,6 +300,13 @@ export class AgentOrchestrator {
 
     while (stepCount < maxSteps && task.status !== "completed" && task.status !== "error") {
       stepCount++;
+
+      // Check if paused — wait for resume
+      if (task.status === "paused") {
+        await new Promise<void>((resolve) => {
+          this.pauseResolvers.set(task.id, resolve);
+        });
+      }
 
       // Check task wasn't cancelled
       const current = this.tasks.get(task.id);
@@ -371,6 +406,14 @@ export class AgentOrchestrator {
 
     try {
       let result: unknown;
+
+      // Safety mode: block potentially dangerous tools
+      const settings = await SettingsStore.load();
+      if (settings.agent.safetyMode && SAFETY_BLOCKED_TOOLS.has(name)) {
+        const msg = `[Safety Mode] Tool '${name}' is blocked. Disable safety mode in settings to allow this action.`;
+        this.finishStep(step, msg);
+        return msg;
+      }
 
       if (name === "task_complete") {
         const summary = args["summary"] as string;

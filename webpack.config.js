@@ -13,6 +13,7 @@ module.exports = (env, argv) => ({
     content: "./src/content/index.ts",
     popup: "./src/popup/index.tsx",
     options: "./src/options/index.tsx",
+    panel: "./src/panel/index.tsx",
   },
 
   output: {
@@ -71,9 +72,16 @@ module.exports = (env, argv) => ({
       chunks: ["options"],
     }),
 
+    new HtmlWebpackPlugin({
+      template: "./src/panel/index.html",
+      filename: "panel/index.html",
+      chunks: ["panel"],
+    }),
+
     new CopyPlugin({
       patterns: [
         { from: "manifest.json", to: "." },
+        { from: "rules.json", to: "." },
         { from: "icons", to: "icons", noErrorOnMissing: true },
         { from: "src/assets", to: "assets", noErrorOnMissing: true },
       ],

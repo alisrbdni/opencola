@@ -32,11 +32,15 @@ const DEFAULT_SETTINGS: ExtensionSettings = {
       name: "Google Gemini",
       enabled: false,
       apiKey: "",
-      defaultModel: "gemini-1.5-pro",
+      defaultModel: "gemini-2.5-pro-preview-03-25",
       availableModels: [
+        { id: "gemini-2.5-pro-preview-03-25", name: "Gemini 2.5 Pro Preview", contextWindow: 1000000, supportsVision: true, supportsTools: true },
+        { id: "gemini-2.5-flash-preview-04-17", name: "Gemini 2.5 Flash Preview", contextWindow: 1000000, supportsVision: true, supportsTools: true },
         { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", contextWindow: 1000000, supportsVision: true, supportsTools: true },
+        { id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", contextWindow: 1000000, supportsVision: true, supportsTools: true },
         { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro", contextWindow: 2000000, supportsVision: true, supportsTools: true },
         { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", contextWindow: 1000000, supportsVision: true, supportsTools: true },
+        { id: "gemini-1.5-flash-8b", name: "Gemini 1.5 Flash 8B", contextWindow: 1000000, supportsVision: true, supportsTools: true },
       ],
     },
     {
@@ -90,6 +94,7 @@ const DEFAULT_SETTINGS: ExtensionSettings = {
     autonomyLevel: "supervised",
     confirmBeforeActions: false,
     systemPrompt: "",
+    safetyMode: true,
   },
   ui: {
     theme: "dark",

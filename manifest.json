@@ -27,6 +27,9 @@
     }
   ],
   "options_page": "options/index.html",
+  "side_panel": {
+    "default_path": "panel/index.html"
+  },
   "permissions": [
     "tabs",
     "activeTab",
@@ -43,15 +46,26 @@
     "webRequest",
     "contextMenus",
     "offscreen",
-    "sidePanel"
+    "sidePanel",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": ["<all_urls>"],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "cors_rules",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "web_accessible_resources": [
     {
-      "resources": ["assets/*"],
+      "resources": ["assets/*", "panel/index.html"],
       "matches": ["<all_urls>"]
     }
   ]

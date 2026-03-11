@@ -35,6 +35,11 @@ let messagingRouter: MessagingRouter | null = null;
 async function boot(): Promise<void> {
   console.log("[BrowserAgent] Booting...");
 
+  // Allow side panel to be opened programmatically
+  if (chrome.sidePanel?.setOptions) {
+    chrome.sidePanel.setOptions({ path: "panel/index.html", enabled: true }).catch(() => {});
+  }
+
   const settings = await SettingsStore.load();
 
   // Register LLM providers with their API keys
@@ -83,11 +88,13 @@ async function boot(): Promise<void> {
     }
   });
 
-  // Set up context menu
-  chrome.contextMenus.create({
-    id: "run-agent",
-    title: 'Run Agent on "%s"',
-    contexts: ["selection", "page"],
+  // Set up context menu (remove existing first to avoid duplicate ID error on SW restart)
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: "run-agent",
+      title: 'Run Agent on "%s"',
+      contexts: ["selection", "page"],
+    });
   });
 
   console.log("[BrowserAgent] Boot complete ✓");
@@ -155,6 +162,16 @@ async function handleMessage(message: ChromeMessage): Promise<unknown> {
     case "CANCEL_TASK": {
       orchestrator.cancelTask(message.payload.taskId);
       return { cancelled: true };
+    }
+
+    case "PAUSE_TASK": {
+      orchestrator.pauseTask(message.payload.taskId);
+      return { paused: true };
+    }
+
+    case "RESUME_TASK": {
+      orchestrator.resumeTask(message.payload.taskId);
+      return { resumed: true };
     }
 
     case "GET_TASKS": {

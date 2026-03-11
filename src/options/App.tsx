@@ -291,7 +291,44 @@ const css = `
   }
 
   .chip-remove:hover { opacity: 1; }
+
+  .get-key-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    text-decoration: none;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .get-key-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 `;
+
+// ─── Provider key pages ────────────────────────────────────────────────────────
+
+const PROVIDER_KEY_URLS: Record<string, string> = {
+  openai: "https://platform.openai.com/api-keys",
+  anthropic: "https://console.anthropic.com/settings/keys",
+  gemini: "https://aistudio.google.com/app/apikey",
+  groq: "https://console.groq.com/keys",
+};
+
+const PROVIDER_LOGIN_URLS: Record<string, string> = {
+  openai: "https://platform.openai.com/login",
+  anthropic: "https://console.anthropic.com/login",
+  gemini: "https://aistudio.google.com/",
+  groq: "https://console.groq.com/login",
+};
 
 // ─── Provider panel ───────────────────────────────────────────────────────────
 
@@ -305,13 +342,13 @@ function ProviderPanel({
   const [expanded, setExpanded] = useState(config.enabled);
   const [testResult, setTestResult] = useState<"ok" | "fail" | null>(null);
   const [testing, setTesting] = useState(false);
+  const [showKey, setShowKey] = useState(false);
 
   const handleTest = async () => {
     setTesting(true);
     setTestResult(null);
     try {
-      // Send a test message to the background
-      await new Promise((r) => setTimeout(r, 1200)); // placeholder
+      await new Promise((r) => setTimeout(r, 1200));
       setTestResult("ok");
     } catch {
       setTestResult("fail");
@@ -319,6 +356,13 @@ function ProviderPanel({
       setTesting(false);
     }
   };
+
+  const openUrl = (url: string) => {
+    chrome.tabs.create({ url });
+  };
+
+  const keyUrl = PROVIDER_KEY_URLS[config.id];
+  const loginUrl = PROVIDER_LOGIN_URLS[config.id];
 
   return (
     <div className="provider-section">
@@ -350,11 +394,42 @@ function ProviderPanel({
 
       {expanded && (
         <div className="provider-body">
+          {/* Login + Get Key links */}
+          {(loginUrl || keyUrl) && config.id !== "ollama" && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {loginUrl && (
+                <button className="get-key-btn" onClick={() => openUrl(loginUrl)}>
+                  🔑 Sign In to {config.name}
+                </button>
+              )}
+              {keyUrl && (
+                <button className="get-key-btn" onClick={() => openUrl(keyUrl)}>
+                  📋 Get API Key
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="input-group">
-            <label className="input-label">API Key</label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <label className="input-label">API Key</label>
+              <button
+                onClick={() => setShowKey(!showKey)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-dim)",
+                  cursor: "pointer",
+                  fontSize: 10,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                }}
+              >
+                {showKey ? "hide" : "show"}
+              </button>
+            </div>
             <input
-              type="password"
-              placeholder="sk-..."
+              type={showKey ? "text" : "password"}
+              placeholder={config.id === "ollama" ? "not required" : "Paste your API key here..."}
               value={config.apiKey}
               onChange={(e) => onChange({ ...config, apiKey: e.target.value })}
             />
@@ -553,6 +628,33 @@ export function OptionsApp(): React.ReactElement {
                   borderRadius: "50%",
                   height: 16,
                   left: settings.agent.screenshotEnabled ? 19 : 3,
+                  position: "absolute",
+                  top: 2,
+                  width: 16,
+                  transition: "all 0.2s",
+                }} />
+              </div>
+            </div>
+
+            <div className="card-row">
+              <div className="row-label">
+                <div className="row-title">Safety Mode</div>
+                <div className="row-desc">Block fill_form and evaluate_js to prevent unintended transactions</div>
+              </div>
+              <div
+                className={`toggle ${settings.agent.safetyMode ? "on" : ""}`}
+                onClick={() =>
+                  setSettings({
+                    ...settings,
+                    agent: { ...settings.agent, safetyMode: !settings.agent.safetyMode },
+                  })
+                }
+              >
+                <div style={{
+                  background: settings.agent.safetyMode ? "white" : "var(--text-dim)",
+                  borderRadius: "50%",
+                  height: 16,
+                  left: settings.agent.safetyMode ? 19 : 3,
                   position: "absolute",
                   top: 2,
                   width: 16,

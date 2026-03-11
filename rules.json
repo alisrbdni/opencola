@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        { "header": "Access-Control-Allow-Origin", "operation": "set", "value": "*" },
+        { "header": "Access-Control-Allow-Methods", "operation": "set", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "header": "Access-Control-Allow-Headers", "operation": "set", "value": "Content-Type, Authorization, x-api-key, anthropic-version, anthropic-dangerous-direct-browser-access, anthropic-beta" }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||api.anthropic.com/",
+      "resourceTypes": ["xmlhttprequest", "other"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        { "header": "Access-Control-Allow-Origin", "operation": "set", "value": "*" },
+        { "header": "Access-Control-Allow-Methods", "operation": "set", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "header": "Access-Control-Allow-Headers", "operation": "set", "value": "Content-Type, Authorization" }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||api.openai.com/",
+      "resourceTypes": ["xmlhttprequest", "other"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        { "header": "Access-Control-Allow-Origin", "operation": "set", "value": "*" },
+        { "header": "Access-Control-Allow-Methods", "operation": "set", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "header": "Access-Control-Allow-Headers", "operation": "set", "value": "Content-Type, Authorization, x-goog-api-key" }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||generativelanguage.googleapis.com/",
+      "resourceTypes": ["xmlhttprequest", "other"]
+    }
+  },
+  {
+    "id": 4,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        { "header": "Access-Control-Allow-Origin", "operation": "set", "value": "*" },
+        { "header": "Access-Control-Allow-Methods", "operation": "set", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "header": "Access-Control-Allow-Headers", "operation": "set", "value": "Content-Type, Authorization" }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||api.groq.com/",
+      "resourceTypes": ["xmlhttprequest", "other"]
+    }
+  }
+]

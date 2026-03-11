@@ -21,6 +21,18 @@ interface GeminiResponse {
   modelVersion: string;
 }
 
+/** Recursively remove fields Gemini's function-calling schema doesn't accept */
+function stripUnsupportedSchemaFields(schema: unknown): unknown {
+  if (Array.isArray(schema)) return schema.map(stripUnsupportedSchemaFields);
+  if (typeof schema !== "object" || schema === null) return schema;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(schema as Record<string, unknown>)) {
+    if (k === "additionalProperties" || k === "$schema") continue;
+    out[k] = stripUnsupportedSchemaFields(v);
+  }
+  return out;
+}
+
 export class GeminiProvider implements ILLMProvider {
   readonly id = "gemini" as const;
   readonly name = "Google Gemini";
@@ -32,7 +44,7 @@ export class GeminiProvider implements ILLMProvider {
     try {
       const res = await this.complete(
         { messages: [{ role: "user", content: "ping" }], maxTokens: 5 },
-        "gemini-1.5-flash"
+        "gemini-2.0-flash"
       );
       return !!res.content;
     } catch {
@@ -61,7 +73,7 @@ export class GeminiProvider implements ILLMProvider {
           functionDeclarations: request.tools.map((t) => ({
             name: t.name,
             description: t.description,
-            parameters: t.parameters,
+            parameters: stripUnsupportedSchemaFields(t.parameters),
           })),
         },
       ];
